@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: namma-metro-ticketing-system-test
+  datasource:
+    url: jdbc:h2:mem:nammametro_test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+    driverClassName: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  kafka:
+    listener:
+      auto-startup: false
+    admin:
+      auto-create: false
+
+nammametro:
+  fare:
+    base-fare: 10.0
+    max-fare: 60.0
+    smart-card-discount-pct: 5.0
+    max-stay-minutes: 120
+    penalty-per-extra-hour: 20.0
+  redis:
+    ticket-ttl-seconds: 14400
+    fare-ttl-seconds: 86400
+    idempotency-ttl-seconds: 300
