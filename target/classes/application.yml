@@ -1,0 +1,119 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: namma-metro-ticketing-system
+  
+  # JPA / Hibernate Configuration
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+  
+  # Default in-memory H2 database (supports instant local start without prerequisite services)
+  datasource:
+    url: jdbc:h2:mem:nammametro;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+    driverClassName: org.h2.Driver
+    username: sa
+    password: ""
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      connect-timeout: 2000ms
+      client-type: lettuce
+
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    admin:
+      auto-create: ${KAFKA_AUTO_CREATE:false}
+    listener:
+      auto-startup: ${KAFKA_AUTO_STARTUP:false}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: 1
+      retries: 0
+      properties:
+        max.block.ms: 1000
+    consumer:
+      group-id: namma-metro-group
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.nammametro.*"
+
+# Metro Application Custom Config
+nammametro:
+  fare:
+    base-fare: 10.0
+    slab-1-dist: 2.0
+    slab-2-dist: 4.0
+    slab-3-dist: 6.0
+    slab-4-dist: 8.0
+    slab-5-dist: 12.0
+    max-fare: 60.0
+    smart-card-discount-pct: 5.0
+    max-stay-minutes: 120
+    penalty-per-extra-hour: 20.0
+  redis:
+    ticket-ttl-seconds: 14400 # 4 hours
+    fare-ttl-seconds: 86400  # 24 hours
+    idempotency-ttl-seconds: 300 # 5 minutes
+  kafka:
+    topics:
+      ticket-events: ticket-booking-events
+      payment-events: payment-events
+      gate-events: station-gate-events
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+---
+# Docker Profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:metro-mysql}:${MYSQL_PORT:3306}/${MYSQL_DB:nammametro_db}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USER:metro_user}
+    password: ${MYSQL_PASSWORD:metro_password}
+  data:
+    redis:
+      host: ${REDIS_HOST:metro-redis}
+      port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}
+    admin:
+      auto-create: true
+    listener:
+      auto-startup: true

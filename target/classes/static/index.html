@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Namma Metro (ನಮ್ಮ ಮೆಟ್ರೋ) - High-Performance Ticketing Platform</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚇</text></svg>">
+    <style>
+        /* Embedded CSS to guarantee instant desktop fitting and zero cache latency */
+        :root {
+            --purple-line: #8a2be2;
+            --purple-glow: rgba(138, 43, 226, 0.35);
+            --purple-dark: #4b0082;
+            --green-line: #00c853;
+            --green-glow: rgba(0, 200, 83, 0.35);
+            --green-dark: #1b5e20;
+            --interchange-gold: #ffd700;
+            
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: rgba(22, 27, 34, 0.92);
+            --border-color: rgba(255, 255, 255, 0.12);
+            
+            --text-main: #f0f6fc;
+            --text-muted: #8b949e;
+            --accent-cyan: #00f2fe;
+            --danger: #f85149;
+            --success: #3fb950;
+            --warning: #d29922;
+
+            --radius-lg: 14px;
+            --radius-md: 8px;
+            --radius-sm: 6px;
+            --transition: all 0.25s ease;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(138, 43, 226, 0.18) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(0, 200, 83, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            background: rgba(13, 17, 23, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 10px 20px;
+        }
+
+        .header-container {
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .metro-badge-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--purple-line), var(--green-line));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(138, 43, 226, 0.4);
+        }
+
+        .brand-title h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #fff, #c9d1d9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-title p {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .status-pills {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success);
+        }
+
+        /* Responsive 2-Column Grid Fitting Desktop */
+        .main-container {
+            width: 100%;
+            max-width: 1280px;
+            margin: 16px auto;
+            padding: 0 16px 40px 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .left-col, .right-col {
+            width: 100%;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .glass-card {
+            width: 100%;
+            min-width: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            gap: 8px;
+        }
+
+        .card-title {
+            font-size: 0.98rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .purple-line-accent { border-left: 4px solid var(--purple-line); }
+        .green-line-accent { border-left: 4px solid var(--green-line); }
+        .dual-line-accent { border-left: 4px solid var(--interchange-gold); }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        @media (max-width: 550px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+            width: 100%;
+        }
+
+        label {
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        select:focus, input:focus {
+            border-color: var(--purple-line);
+            box-shadow: 0 0 0 2px var(--purple-glow);
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            border: none;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--purple-line), #6a1b9a);
+            color: #fff;
+            box-shadow: 0 3px 10px rgba(138, 43, 226, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 14px rgba(138, 43, 226, 0.6);
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, var(--green-line), #1b5e20);
+            color: #fff;
+            box-shadow: 0 3px 10px rgba(0, 200, 83, 0.4);
+        }
+
+        .btn-green:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 14px rgba(0, 200, 83, 0.6);
+        }
+
+        .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+        .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+        .btn-outline:hover { background: rgba(255, 255, 255, 0.06); }
+
+        .route-estimate-box {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            margin: 10px 0;
+        }
+
+        .estimate-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            text-align: center;
+        }
+
+        .est-val { font-size: 1.15rem; font-weight: 700; color: var(--accent-cyan); }
+        .est-lbl { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; }
+
+        .interchange-alert {
+            margin-top: 8px;
+            padding: 6px 10px;
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 3px solid var(--interchange-gold);
+            font-size: 0.75rem;
+            color: #ffd700;
+            border-radius: 4px;
+        }
+
+        /* Ticket Pass */
+        .ticket-pass {
+            width: 100%;
+            background: linear-gradient(145deg, #1f1b2c, #161824);
+            border: 2px solid var(--purple-line);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .ticket-status-badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-active { background: rgba(0, 200, 83, 0.2); color: var(--green-line); border: 1px solid var(--green-line); }
+        .status-pending, .status-payment_pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+        .status-in_transit { background: rgba(0, 242, 254, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); }
+        .status-completed { background: rgba(139, 148, 158, 0.2); color: var(--text-muted); border: 1px solid var(--text-muted); }
+
+        .qr-box {
+            background: #fff;
+            padding: 8px;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 8px 0;
+        }
+
+        .qr-box img { width: 140px; height: 140px; display: block; }
+
+        .ticket-stations {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .station-node h4 { font-size: 0.92rem; font-weight: 700; }
+        .station-node span { font-size: 0.7rem; color: var(--text-muted); }
+
+        /* Turnstile Gate Simulator */
+        .turnstile-stage {
+            background: #090d12;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 14px;
+            text-align: center;
+        }
+
+        .turnstile-visual {
+            height: 90px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            position: relative;
+            margin: 8px 0;
+        }
+
+        .gate-post { width: 22px; height: 75px; background: #2d3748; border-radius: 4px; border: 2px solid #4a5568; }
+        .gate-paddle {
+            width: 55px;
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: left center;
+        }
+
+        .gate-paddle.open {
+            transform: rotate(-65deg);
+            background: var(--green-line);
+            box-shadow: 0 0 12px var(--green-line);
+        }
+
+        .led-indicator {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4a5568;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+
+        .led-indicator.led-green { background: #00e676; box-shadow: 0 0 16px #00e676; }
+        .led-indicator.led-red { background: #ff1744; box-shadow: 0 0 16px #ff1744; }
+
+        /* Kafka Terminal */
+        .event-feed {
+            width: 100%;
+            background: #06090e;
+            border: 1px solid #30363d;
+            border-radius: var(--radius-md);
+            height: 220px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 8px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.78rem;
+        }
+
+        .event-log-item {
+            width: 100%;
+            padding: 6px 8px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid #30363d;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            word-break: break-word;
+        }
+
+        .event-log-item.topic-ticket { border-left-color: var(--purple-line); }
+        .event-log-item.topic-payment { border-left-color: var(--green-line); }
+        .event-log-item.topic-gate { border-left-color: var(--accent-cyan); }
+
+        .event-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.68rem;
+        }
+
+        .event-badge { font-weight: 700; padding: 1px 4px; border-radius: 3px; font-size: 0.66rem; }
+        .topic-ticket .event-badge { background: rgba(138, 43, 226, 0.2); color: #d8b4fe; }
+        .topic-payment .event-badge { background: rgba(0, 200, 83, 0.2); color: #86efac; }
+        .topic-gate .event-badge { background: rgba(0, 242, 254, 0.2); color: #7dd3fc; }
+
+        /* Benchmark Cards */
+        .benchmark-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        @media (max-width: 500px) {
+            .benchmark-metrics { grid-template-columns: 1fr; }
+        }
+
+        .metric-box {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 10px;
+        }
+
+        .metric-comparison {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 6px;
+        }
+
+        .bar-wrapper {
+            flex-grow: 1;
+            height: 8px;
+            background: #21262d;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0 6px;
+        }
+
+        .bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+        .bar-green { background: linear-gradient(90deg, #2ea043, #3fb950); }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="header-container">
+            <div class="logo-group">
+                <div class="metro-badge-icon">🚇</div>
+                <div class="brand-title">
+                    <h1>ನಮ್ಮ ಮೆಟ್ರೋ | Namma Metro Ticketing System</h1>
+                    <p>Event-Driven Microservices • Spring Boot 3 • Kafka • Redis • MySQL</p>
+                </div>
+            </div>
+            <div class="status-pills">
+                <div class="pill">
+                    <div class="dot"></div>
+                    <span>Spring Boot 3</span>
+                </div>
+                <div class="pill">
+                    <div class="dot" style="background: #00f2fe; box-shadow: 0 0 8px #00f2fe;"></div>
+                    <span>Redis Cache</span>
+                </div>
+                <div class="pill">
+                    <div class="dot" id="streamStatusDot"></div>
+                    <span id="streamStatusText">Live Kafka Stream</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Application Grid (Fits Desktop cleanly) -->
+    <div class="main-container">
+
+        <!-- Left Column: Booking & Benchmarks -->
+        <div class="left-col">
+
+            <!-- 1. Route & Fare Calculator -->
+            <div class="glass-card dual-line-accent">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>📍</span>
+                        <span>Select Journey & Calculate Fare (ದರ ಲೆಕ್ಕಾಚಾರ)</span>
+                    </div>
+                    <span class="pill" id="fareCacheBadge" style="font-size: 0.7rem;">⚡ Redis Cache</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="sourceSelect">Source Station (ಆರಂಭಿಕ ನಿಲ್ದಾಣ):</label>
+                        <select id="sourceSelect"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="destSelect">Destination Station (ಗಮ್ಯಸ್ಥಾನ ನಿಲ್ದಾಣ):</label>
+                        <select id="destSelect"></select>
+                    </div>
+                </div>
+
+                <div class="form-row" style="align-items: center;">
+                    <div class="form-group">
+                        <label for="passengerCount">Passengers (ಪ್ರಯಾಣಿಕರ ಸಂಖ್ಯೆ):</label>
+                        <input type="number" id="passengerCount" min="1" max="6" value="1">
+                    </div>
+                    <div class="form-group" style="padding-top: 14px;">
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; color: var(--text-main); font-size: 0.8rem;">
+                            <input type="checkbox" id="smartCardToggle" style="width: 16px; height: 16px;">
+                            <span>Smart Card (5% Discount)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="route-estimate-box">
+                    <div class="estimate-grid">
+                        <div>
+                            <div class="est-val" id="estFare">₹0</div>
+                            <div class="est-lbl">Total Fare</div>
+                        </div>
+                        <div>
+                            <div class="est-val" id="estDistance">0 km</div>
+                            <div class="est-lbl">Distance</div>
+                        </div>
+                        <div>
+                            <div class="est-val" id="estStations">0</div>
+                            <div class="est-lbl">Stops</div>
+                        </div>
+                        <div>
+                            <div class="est-val" id="estTime">0 min</div>
+                            <div class="est-lbl">Est. Time</div>
+                        </div>
+                    </div>
+                    <div id="interchangeBanner" class="interchange-alert" style="display: none;"></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="userPhoneInput">Passenger Phone / User ID:</label>
+                        <input type="text" id="userPhoneInput" value="9876543210" placeholder="Mobile number">
+                    </div>
+                    <div class="form-group" style="justify-content: flex-end;">
+                        <button class="btn btn-primary" id="bookBtn" onclick="bookTicket()">
+                            <span>🎫 Book QR Ticket</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Idempotent Payment Terminal -->
+            <div class="glass-card dual-line-accent">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>🔒</span>
+                        <span>Idempotent Payment Engine (ನಕಲಿ ರದ್ದತಿ ಪಾವತಿ)</span>
+                    </div>
+                    <button class="btn btn-outline" style="padding: 3px 8px; font-size: 0.72rem;" onclick="generateNewIdempotencyKey()">
+                        🔄 New Key
+                    </button>
+                </div>
+
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">
+                    Zero duplicate ticket guarantee using 2-phase idempotency locking (Redis + MySQL).
+                </p>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="payTicketNumber">Ticket Number:</label>
+                        <input type="text" id="payTicketNumber" placeholder="Autofilled from booking">
+                    </div>
+                    <div class="form-group">
+                        <label for="payAmount">Amount:</label>
+                        <input type="text" id="payAmount" readonly placeholder="₹0.00">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="idempotencyKeyInput">Idempotency Key (Distributed Token):</label>
+                        <input type="text" id="idempotencyKeyInput" style="font-family: monospace; font-size: 0.78rem; color: #ffd700;">
+                    </div>
+                    <div class="form-group">
+                        <label for="payMethodSelect">Payment Method:</label>
+                        <select id="payMethodSelect">
+                            <option value="UPI">📱 UPI (GPay / PhonePe / Paytm)</option>
+                            <option value="METRO_SMART_CARD">💳 Smart Card Balance</option>
+                            <option value="CREDIT_CARD">💳 Card Payment</option>
+                            <option value="WALLET">👛 Metro Wallet</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
+                    <button class="btn btn-green" id="payBtn" onclick="processPayment(false)">
+                        <span>⚡ Pay & Issue Ticket</span>
+                    </button>
+                    <button class="btn btn-warning" onclick="triggerRapidDoubleClickTest()">
+                        <span>⚡ Test Rapid Double-Click</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Performance & Latency Benchmark Panel -->
+            <div class="glass-card dual-line-accent">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>📊</span>
+                        <span>Performance Benchmark & Latency Suite</span>
+                    </div>
+                    <button class="btn btn-outline" id="runBenchmarkBtn" onclick="runBenchmark()">
+                        <span>⚡ Run Benchmarks</span>
+                    </button>
+                </div>
+
+                <div class="benchmark-metrics">
+                    <div class="metric-box">
+                        <div style="font-size: 0.78rem; font-weight: 600; color: var(--accent-cyan);">
+                            🚀 Redis Caching Speedup
+                        </div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">
+                            DB: <strong id="dbLatencyVal" style="color: #ff7b72;">-- ms</strong> | Redis: <strong id="redisLatencyVal" style="color: #3fb950;">-- ms</strong>
+                        </div>
+                        <div class="metric-comparison">
+                            <span style="font-size: 0.7rem;">Lookup</span>
+                            <div class="bar-wrapper">
+                                <div class="bar-fill bar-green" id="redisBarFill" style="width: 85%;"></div>
+                            </div>
+                            <span id="speedupFactorVal" style="font-weight: 700; color: #3fb950; font-size: 0.78rem;">15x Speedup</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-box">
+                        <div style="font-size: 0.78rem; font-weight: 600; color: #d8b4fe;">
+                            ⚡ Kafka Async Event Flow
+                        </div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">
+                            Sync: <strong id="syncLatencyVal" style="color: #ff7b72;">450 ms</strong> | Async: <strong id="asyncLatencyVal" style="color: #3fb950;">85 ms</strong>
+                        </div>
+                        <div class="metric-comparison">
+                            <span style="font-size: 0.7rem;">Issuance</span>
+                            <div class="bar-wrapper">
+                                <div class="bar-fill bar-green" id="asyncBarFill" style="width: 19%;"></div>
+                            </div>
+                            <span id="reductionPctVal" style="font-weight: 700; color: #3fb950; font-size: 0.78rem;">-81.1% Latency</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: QR Pass, Turnstile Gate & Kafka Log -->
+        <div class="right-col">
+
+            <!-- 1. Live Dynamic QR Ticket Pass -->
+            <div id="ticketPassCard" class="ticket-pass" style="display: none;">
+                <div class="ticket-header">
+                    <div style="text-align: left;">
+                        <span style="font-size: 0.7rem; color: var(--text-muted);">NAMMA METRO PASS</span>
+                        <h3 id="ticketNumDisplay" style="font-size: 0.88rem; font-family: monospace; color: var(--accent-cyan);">NMM-xxx</h3>
+                    </div>
+                    <span class="ticket-status-badge status-active" id="ticketStatusBadge">ACTIVE</span>
+                </div>
+
+                <div class="ticket-stations">
+                    <div class="station-node">
+                        <h4 id="ticketSrcDisplay">Whitefield</h4>
+                        <span id="ticketSrcKnDisplay">ವೈಟ್‌ಫೀಲ್ಡ್</span>
+                    </div>
+                    <div style="color: var(--interchange-gold); font-size: 1.2rem;">➔</div>
+                    <div class="station-node">
+                        <h4 id="ticketDestDisplay">Indiranagar</h4>
+                        <span id="ticketDestKnDisplay">ಇಂದಿರಾನಗರ</span>
+                    </div>
+                </div>
+
+                <div class="qr-box">
+                    <img id="ticketQrImage" src="" alt="Metro QR Ticket">
+                </div>
+
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
+                    <span id="ticketFareDisplay">₹40.00</span>
+                    <span id="ticketUserDisplay">User: 9876543210</span>
+                    <span id="ticketValidDisplay">Valid: 4 Hours</span>
+                </div>
+            </div>
+
+            <!-- 2. AFC Turnstile Gate Simulator -->
+            <div class="glass-card green-line-accent">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>🚪</span>
+                        <span>AFC Turnstile Gate Simulator (ಸ್ವಯಂಚಾಲಿತ ದ್ವಾರ)</span>
+                    </div>
+                </div>
+
+                <div class="turnstile-stage">
+                    <div class="led-indicator" id="gateLed"></div>
+                    <div class="turnstile-visual">
+                        <div class="gate-post"></div>
+                        <div class="gate-paddle" id="gatePaddle"></div>
+                        <div class="gate-post"></div>
+                    </div>
+                    <div id="gateMessage" style="min-height: 20px; font-size: 0.8rem; font-weight: 600; margin-top: 6px;">
+                        <span>Gate Ready. Present QR Code or Ticket Number.</span>
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-top: 12px;">
+                    <div class="form-group">
+                        <label for="gateStationSelect">Station Gate:</label>
+                        <select id="gateStationSelect"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="gateTypeSelect">Gate Mode:</label>
+                        <select id="gateTypeSelect">
+                            <option value="ENTRY">🟢 Tap-In (Entry Turnstile)</option>
+                            <option value="EXIT">🔴 Tap-Out (Exit Turnstile)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label for="gateScanPayload">Scan QR Payload / Ticket Number:</label>
+                    <input type="text" id="gateScanPayload" placeholder="Scanned ticket number">
+                </div>
+
+                <button class="btn btn-primary" id="scanBtn" style="width: 100%;" onclick="scanGate()">
+                    <span>📳 Tap & Scan QR Code</span>
+                </button>
+            </div>
+
+            <!-- 3. Live Kafka Event Stream Panel -->
+            <div class="glass-card purple-line-accent">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>⚡</span>
+                        <span>Live Apache Kafka Event Stream</span>
+                    </div>
+                    <span style="font-size: 0.68rem; color: var(--text-muted);">Real-time Topic Monitor</span>
+                </div>
+
+                <div class="event-feed" id="eventFeed">
+                    <!-- Dynamic real-time event logs populated by SSE -->
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="/js/app.js?v=2"></script>
+</body>
+</html>
